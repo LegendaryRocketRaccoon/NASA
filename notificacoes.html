@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#9C27B0">
+  <title>Notificações</title>
+  <link rel="stylesheet" href="./CSS/compartilhamento.css">
+  <style>
+    .notificacao {
+      background-color: #1c1c1c;
+      color: white;
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 16px;
+      box-shadow: 0 0 8px rgba(0, 0, 0, 0.3);
+      display: flex;
+      align-items: center;
+      transition: background-color 0.3s;
+    }
+
+    .container {
+      overflow-x: hidden;
+      /* Impede que conteúdo transborde horizontalmente */
+    }
+
+    .notificacao img {
+      width: 60px;
+      height: 60px;
+      object-fit: cover;
+      border-radius: 10px;
+      margin-right: 15px;
+    }
+
+    .nao-lida {
+      background-color: #311b92;
+    }
+
+    .botao-marcar {
+      background-color: #6200ea;
+      color: white;
+      padding: 10px 16px;
+      margin: 16px 0;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 15px;
+    }
+
+    .botao-marcar:hover {
+      background-color: #3700b3;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="container">
+
+    <h1>Notificações Inteligentes</h1>
+    <p style="color:#80D0FF; margin-bottom:10px;">Receba notificações sobre recursos, alertas ambientais e novidades para sua cidade.<br>
+    <span style="color:#4caf50;">Em breve: notificações automáticas baseadas em dados da NASA.</span></p>
+
+    <a href="./compartilhamento.html" style="width: 100%;">
+      <button id="retornar-botao-not" aria-label="Voltar ao compartilhamento">Voltar</button>
+    </a>
+
+  <button class="botao-marcar" id="marcarLidasBtn">Marcar todas como lidas.</button>
+
+    <div id="lista-notificacoes"></div>
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+  <script src="./JS/firebase-config.js"></script>
+
+  <script>
+    let usuarioAtualUid = null;
+
+    // ===== CHECAGEM DE USUÁRIO LOGADO =====
+    firebase.auth().onAuthStateChanged((user) => {
+      if (!user) {
+        alert("Você precisa estar logado.");
+        window.location.href = "index.html";
+        return;
+      }
+
+      usuarioAtualUid = user.uid; // Pega o UID do usuário logado
+      carregarNotificacoes(); // Carrega as notificações após o login
+    });
+
+    function carregarNotificacoes() {
+      const lista = document.getElementById("lista-notificacoes");
+      const notificacoesRef = firebase.database().ref("notificacoes");
+
+      notificacoesRef.on("value", (snapshot) => {
+        lista.innerHTML = "";
+        const dados = snapshot.val();
+
+        if (!dados) {
+          lista.innerHTML = "<p style='color:white;'>Nenhuma notificação por enquanto.</p>";
+          return;
+        }
+
+        // Filtra as notificações para mostrar apenas as do usuário logado
+        const notificacoesFiltradas = Object.entries(dados)
+          .filter(([id, n]) => n.uidDestino === usuarioAtualUid) // Verifica se o UID do destino é o mesmo do usuário logado
+          .sort((a, b) => b[1].timestamp - a[1].timestamp); // Ordena por timestamp (do mais recente para o mais antigo)
+
+        notificacoesFiltradas.forEach(([id, n]) => {
+          const div = document.createElement("div");
+          div.classList.add("notificacao");
+          if (!n.visualizado) div.classList.add("nao-lida");
+
+          div.innerHTML = `
+            <img src="${n.imagem}" alt="${n.nome}">
+            <div>
+              <strong>${n.nome}</strong><br>
+              <span>${n.mensagem}</span>
+            </div>
+          `;
+
+          lista.appendChild(div);
+        });
+      });
+    }
+
+    // // ===== MARCAR NOTIFICAÇÕES COMO LIDAS =====
+    document.getElementById("marcarLidasBtn").addEventListener("click", () => {
+      const notificacoesRef = firebase.database().ref("notificacoes");
+
+      notificacoesRef.once("value", (snapshot) => {
+        snapshot.forEach((childSnapshot) => {
+          const id = childSnapshot.key;
+          const n = childSnapshot.val();
+
+          if (n.uidDestino === usuarioAtualUid && !n.visualizado) { // Verifica o UID e se a notificação não foi visualizada
+            notificacoesRef.child(id).update({ visualizado: true });
+          }
+        });
+      });
+    });
+
+    // ===== VERIFICA SE HÁ NOTIFICAÇÕES NÃO LIDAS =====
+    const notificacoesRef = firebase.database().ref("notificacoes");
+    notificacoesRef.on("value", (snapshot) => {
+      let temNaoLidas = false;
+      snapshot.forEach((childSnapshot) => {
+        const n = childSnapshot.val();
+        if (n.uidDestino === usuarioAtualUid && !n.visualizado) {
+          temNaoLidas = true;
+        }
+      });
+
+      const btn = document.getElementById("notificacaoBtn");
+      if (temNaoLidas) {
+        btn.classList.add("piscar");
+      } else {
+        btn.classList.remove("piscar");
+      }
+    });
+  </script>
+</body>
+
+</html>

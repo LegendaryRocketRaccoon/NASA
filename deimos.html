@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Deimos - Assistente Urbano NASA</title>
+  <link rel="stylesheet" href="./CSS/deimos.css">
+  <link rel="manifest" href="./manifest.json">
+</head>
+<body>
+  <header>Deimos - Assistente Urbano NASA</header>
+  <main class="deimos-main">
+    <section class="intro">
+      <h2>Como posso ajudar no planejamento da sua cidade.</h2>
+      <p>Sou Deimos, uma IA treinada para auxiliar urbanistas, gestores e cidadãos a tomar decisões inteligentes usando dados ambientais e urbanos.<br>
+      <strong>Exemplos de perguntas.</strong></p>
+      <ul>
+        <li>Como está a qualidade do ar na minha região.</li>
+        <li>Quais estratégias para reduzir ilhas de calor.</li>
+        <li>Como usar dados da NASA para planejar áreas verdes.</li>
+        <li>Como adaptar a cidade às mudanças climáticas.</li>
+      </ul>
+      <p style="color:#80D0FF;">Em breve: respostas com base em dados reais da NASA.</p>
+    </section>
+    <section id="chat-container" aria-live="polite"></section>
+    <section id="input-area">
+      <input type="text" id="user-input" placeholder="Digite sua mensagem..." aria-label="Campo de entrada para mensagens" />
+      <button id="send-btn" aria-label="Enviar mensagem">Enviar</button>
+      <button id="voice-toggle-btn" aria-label="Ativar ou desativar voz">Silenciar</button>
+    </section>
+    <div id="status">Voz ativada. Pronto para conversar!</div>
+  </main>
+  <script type="module" src="./JS/deimos.js"></script>
+</body>
+</html>

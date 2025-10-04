@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#9C27B0">
+  <title>Compartilhamento de itens</title>
+  <link rel="stylesheet" href="./CSS/compartilhamento.css">
+</head>
+
+<body>
+  <div class="container">
+
+    <h1>Compartilhamento de Recursos Sustentáveis</h1>
+    <p style="color:#80D0FF; margin-bottom:10px;">Compartilhe, empreste ou solicite itens para promover economia circular e reduzir o impacto ambiental.<br>
+    <span style="color:#4caf50;">Em breve: sugestões de compartilhamento baseadas em dados de consumo e clima da NASA.</span></p>
+
+    <a href="./menu.html" style="width: 100%;">
+      <button id="ofe" aria-label="Retornar ao menu">Retornar</button>
+    </a>
+
+    <input type="text" id="search" placeholder="O que você precisa hoje?" aria-label="Pesquisar item" />
+
+    <div class="categorias">
+
+      <a href="./notificacoes.html">
+        <button id="notificacaoBtn">🔔</button>
+      </a>
+
+      <button data-categoria="todos">📦 Todos os Itens</button>
+      <button data-categoria="ferramentas">🔧 Ferramentas</button>
+      <button data-categoria="livros">📚 Livros</button>
+      <button data-categoria="cozinha">🍳 Cozinha</button>
+      <button data-categoria="lazer">🎮 Lazer</button>
+      <button data-categoria="esportes">⚽ Esportes</button>
+      <button data-categoria="material">🎨 Material</button>
+      <button data-categoria="saude">💚 Saúde</button>
+
+    </div>
+
+    <div id="lista-itens"></div>
+
+    <a href="./btn-compart.html" style="width: 100%;">
+  <button id="oferecer-btn">Solicitar item.</button>
+    </a>
+
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+  <script src="./JS/firebase-config.js"></script>
+
+  <script>
+    let usuarioAtualUid = null;
+    const todosItens = [];
+
+    // ===== CHECAR USUÁRIO LOGADO =====
+    firebase.auth().onAuthStateChanged((user) => {
+      if (!user) {
+        alert("Você precisa estar logado.");
+        window.location.href = "index.html";
+        return;
+      }
+
+      usuarioAtualUid = user.uid;
+
+      // Verificar se há notificações não lidas
+      const notificacoesRef = database.ref("notificacoes");
+      notificacoesRef.on("value", (snapshot) => {
+        let temNaoLidas = false;
+        snapshot.forEach((childSnapshot) => {
+          const n = childSnapshot.val();
+          // O botão só pisca se a notificação for direcionada AO usuário logado (destinatário) e ainda não visualizada
+          if (n.uidDestino === usuarioAtualUid && !n.visualizado) {
+            temNaoLidas = true;
+          }
+        });
+
+        const btn = document.getElementById("notificacaoBtn");
+        if (temNaoLidas) {
+          btn.classList.add("piscar");
+        } else {
+          btn.classList.remove("piscar");
+        }
+      }); // certo
+
+      // Carregar os itens solicitados
+      const databaseRef = database.ref("itensSolicitados");
+      databaseRef.on("value", (snapshot) => {
+        const data = snapshot.val();
+        const extras = [];
+
+        if (data) {
+          Object.entries(data).forEach(([key, item]) => {
+            item.id = key; // ← necessário para atualizar/remover no Firebase
+            extras.push(item);
+          });
+        }
+
+        todosItens.length = 0;
+        todosItens.push(...extras);
+        exibirItens(todosItens);
+      });
+    });
+
+    function exibirItens(lista) {
+      const container = document.getElementById("lista-itens");
+      container.innerHTML = "";
+
+      lista.forEach(item => {
+        const itemDiv = document.createElement("div");
+        itemDiv.className = `item categoria-${item.categoria?.toLowerCase() || ''}`;
+
+        itemDiv.innerHTML = `
+          <img src="${item.imagem}" alt="${item.nome}" />
+          <div>
+            <strong style="color:white; font-weight: 500; font-size: 18px">${item.nome}</strong><br/>
+            <span style="color: #e0dede"><span class="spanverde">Endereço solicitante:</span> ${item.distancia}</span><br/>
+            <div class="status ${item.status === 'Disponível' ? 'disponivel' : 'emprestado'}">${item.status === "Disponível" ? "Empréstimo" : "Compra"}</div>
+            ${item.uid !== usuarioAtualUid ? `<button class="solicitar-btn">${item.status === "Disponível" ? "Emprestar" : "Oferecer"}</button>` : ''}
+          </div>
+        `;
+
+        container.appendChild(itemDiv);
+
+        const solicitarBtn = itemDiv.querySelector(".solicitar-btn");
+
+        if (solicitarBtn) {
+          const jaOfertado = item.uidOfertante === usuarioAtualUid;
+          atualizarBotaoSolicitacao(jaOfertado);
+
+          solicitarBtn.addEventListener("click", () => {
+            if (item.uidOfertante === usuarioAtualUid) {
+              const confirmar = confirm("Tem certeza que deseja cancelar a negociação?");
+              if (confirmar) {
+                database.ref("itensSolicitados").child(item.id).update({ uidOfertante: null });
+
+                database.ref("notificacoes").once("value", (snapshot) => {
+                  snapshot.forEach((childSnapshot) => {
+                    const key = childSnapshot.key;
+                    const notificacao = childSnapshot.val();
+
+                    const mesmaNotificacao =
+                      notificacao.nome === item.nome &&
+                      notificacao.uidDestino === item.uid &&
+                      notificacao.uidSolicitante === usuarioAtualUid;
+
+                    if (mesmaNotificacao) {
+                      database.ref("notificacoes").child(key).remove();
+                    }
+                  });
+                });
+
+                atualizarBotaoSolicitacao(false);
+              }
+            } else {
+              alert(item.status === "Disponível" ? "Solicitação de empréstimo enviada!" : "Item oferecido ao solicitante!");
+
+              database.ref("itensSolicitados").child(item.id).update({
+                uidOfertante: usuarioAtualUid
+              });
+
+              const novaNotificacao = {
+                nome: item.nome,
+                imagem: item.imagem,
+                mensagem: item.status === "Disponível"
+                  ? "Alguém emprestou o item que você solicitou!"
+                  : "Alguém ofereceu o item que você queria comprar!",
+                timestamp: Date.now(),
+                uidDestino: item.uid,
+                uidSolicitante: usuarioAtualUid,
+                visualizado: false
+              };
+
+              database.ref("notificacoes").push(novaNotificacao);
+              atualizarBotaoSolicitacao(true);
+            }
+          });
+
+          function atualizarBotaoSolicitacao(ativo) {
+            if (ativo) {
+              solicitarBtn.textContent = item.status === "Disponível" ? "Emprestado" : "Oferecido";
+              solicitarBtn.style.backgroundColor = "black";
+              solicitarBtn.style.color = "white";
+            } else {
+              solicitarBtn.textContent = item.status === "Disponível" ? "Emprestar" : "Oferecer";
+              solicitarBtn.style.backgroundColor = "";
+              solicitarBtn.style.color = "";
+            }
+          }
+        }
+
+        setTimeout(() => {
+          itemDiv.style.opacity = "1";
+          itemDiv.style.transform = "translateY(0)";
+        }, 100);
+      });
+    }
+
+    // ===== BARRA DE PESQUISA =====
+    document.getElementById("search").addEventListener("input", (e) => {
+      const termo = e.target.value.toLowerCase();
+      const filtrado = todosItens.filter(i => i.nome.toLowerCase().includes(termo));
+      exibirItens(filtrado);
+    });
+
+    // ===== CATEGORIAS? =====
+    document.querySelectorAll(".categorias button").forEach(botao => {
+      botao.addEventListener("click", () => {
+        const categoria = botao.dataset.categoria;
+
+        if (categoria === "todos") {
+          exibirItens(todosItens);
+        } else {
+          const filtrado = todosItens.filter(i => i.categoria?.toLowerCase() === categoria);
+          exibirItens(filtrado);
+        }
+      });
+    });
+  </script>
+
+  <script src="./JS/register-sw.js"></script>
+
+</body>
+
+</html>

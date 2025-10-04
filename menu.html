@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#9C27B0">
+  <link rel="stylesheet" href="./CSS/menu.css">
+  <title>Proximity</title>
+</head>
+
+<body>
+  <div class="centro">
+
+
+    <img src="./Imagens/logo-sem-texto.png" alt="Logo Proximity: Cidades Inteligentes" />
+    <h1 class="msg">Proximity: Cidades Inteligentes e Sustentáveis</h1>
+    <p class="descricao-nasa" style="margin-bottom:18px; color:#80D0FF;">
+      Plataforma colaborativa para urbanistas, gestores e cidadãos planejarem cidades melhores usando dados da NASA.<br>
+      <strong>Explore recursos, compartilhe ideias e consulte a IA Deimos para estratégias urbanas e ambientais.</strong>
+    </p>
+
+    <a href="./compartilhamento.html">
+      <button class="compart">Compartilhamento de Recursos</button>
+    </a>
+
+    <a href="./alertas.html">
+      <button class="alert">Alertas Ambientais e de Segurança</button>
+    </a>
+
+    <a href="./eventos.html">
+      <button class="event">Eventos e Ações Locais</button>
+    </a>
+
+    <a href="deimos.html">
+      <button class="assistente-nasa">Assistente IA Deimos (Planejamento Urbano)</button>
+    </a>
+
+    <div class="btn-menores">
+      <a href="./index.html">
+        <button class="trocarConta" aria-label="Trocar Conta">👤 Trocar Conta</button>
+      </a>
+
+      <a href="./dicas-morador.html">
+        <button class="conversarIA" aria-label="Dicas do Morador">💡 Dicas do Morador</button>
+      </a>
+    </div>
+
+    <div id="user-info" aria-live="polite">
+      Carregando usuário...
+    </div>
+
+  </div>
+
+  <script>
+    window.addEventListener('load', () => {
+      document.body.classList.add('fade-in');
+    });
+  </script>
+
+  <script src="./JS/register-sw.js"></script>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js";
+
+    // ===== FIREBASE =====
+    const firebaseConfig = {
+      apiKey: "AIzaSyBlpWF7Gsyf4ax2PaXVR79zKncc419ktv4",
+      authDomain: "proximity-ddb49.firebaseapp.com",
+      databaseURL: "https://proximity-ddb49-default-rtdb.firebaseio.com",
+      projectId: "proximity-ddb49",
+      storageBucket: "proximity-ddb49.firebasestorage.app",
+      messagingSenderId: "112062802038",
+      appId: "1:112062802038:web:2f2eca97ef48e21c741757"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+
+    
+    const userInfoDiv = document.getElementById('user-info');
+
+    // ===== EXIBIR TEXTO COM IDENTIFICAÇÃO DO PERFIL =====
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        const displayName = user.displayName || "Usuário sem nome";
+        const email = user.email;
+        userInfoDiv.innerHTML = `Logado como: <strong>${user.email}</strong>`;
+      } else {
+        userInfoDiv.innerHTML = "Nenhum usuário logado";
+      }
+    });
+  </script>
+
+</body>
+
+</html>

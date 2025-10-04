@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="manifest" href="./manifest.json">
+  <meta name="theme-color" content="#9C27B0">
+  <link rel="stylesheet" href="./CSS/style.css">
+  <meta name="theme-color" content="#2196f3">
+  <title>Proximity</title>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+</head>
+
+<body>
+  <div class="centro">
+
+
+    <img src="./Imagens/Proximity-logo.PNG" alt="Logo Proximity" id="logo" />
+    <h1 class="se-conecte">Proximity: Planejamento Urbano Inteligente</h1>
+    <h2 class="subtitulo-nasa">Cidades Sustentáveis com Dados da NASA</h2>
+    <p class="descricao-nasa">
+      Bem-vindo ao Proximity. Este aplicativo auxilia urbanistas, gestores e cidadãos a planejar cidades mais inteligentes, resilientes e sustentáveis, utilizando dados de observação da Terra da NASA.<br><br>
+      <strong>Explore alertas ambientais, eventos, dicas de convivência e compartilhe recursos com sua comunidade.</strong><br>
+      <span style="color:#80D0FF;">Converse com a IA Deimos para tirar dúvidas sobre clima, meio ambiente, planejamento urbano e estratégias baseadas em dados reais.</span>
+    </p>
+
+    <div class="botoes">
+      <button class="login">Entrar</button>
+      <button class="cadastro">Criar Conta</button>
+      <a href="deimos.html"><button class="assistente-nasa">Assistente IA NASA</button></a>
+    </div>
+
+    <form class="formulario login-form" style="display: none;">
+      <input class="input-login" type="text" placeholder="Nome de usuário" required />
+      <input class="input-login" type="password" placeholder="Senha" required />
+      <button class="btn" type="submit">Entrar</button>
+  <p class="erro" style="color: red; display: none; margin-top: 10px;">Usuário ou senha incorretos.</p>
+    </form>
+
+    <form class="formulario cadastro-form" style="display: none;">
+      <input class="input-cad" type="text" placeholder="Nome de usuário" required />
+      <input class="input-cad" type="password" placeholder="Senha (mínimo 8 caracteres)" required />
+      <input class="input-cad" type="password" placeholder="Confirmar senha" required />
+      <select id="bairro" class="input-cad" required>
+        <option value="" disabled selected>Selecione seu bairro</option>
+        <option value="18 do Forte">18 do Forte</option>
+        <option value="Ana Rech">Ana Rech</option>
+        <option value="Castelo">Castelo</option>
+        <option value="Centenário">Centenário</option>
+        <option value="Cidade Nova">Cidade Nova</option>
+        <option value="Cruzeiro">Cruzeiro</option>
+        <option value="Desvio Rizzo">Desvio Rizzo</option>
+        <option value="Diamantino">Diamantino</option>
+        <option value="Esplanada">Esplanada</option>
+        <option value="Exposição">Exposição</option>
+        <option value="Fátima">Fátima</option>
+        <option value="Floresta">Floresta</option>
+        <option value="Iracema">Iracema</option>
+        <option value="Jardim América">Jardim América</option>
+        <option value="Jardim das Hortências">Jardim das Hortências</option>
+        <option value="Medianeira">Medianeira</option>
+        <option value="Panazzolo">Panazzolo</option>
+        <option value="Planalto">Planalto</option>
+        <option value="Pioneio">Pioneiro</option>
+        <option value="Pôr do Sol">Pôr do Sol</option>
+        <option value="Rio Branco">Rio Branco</option>
+        <option value="São Ciro">São Ciro</option>
+        <option value="São Ciro 2">São Ciro 2</option>
+        <option value="São Cristóvão">São Cristóvão</option>
+        <option value="São Luís">São Luís</option>
+        <option value="São Pelegrino">São Pelegrino</option>
+        <option value="Serrano">Serrano</option>
+        <option value="Vitória">Vitória</option>
+        <option value="Vila Verde">Vila Verde</option>
+        <option value="Santa Catarina">Santa Catarina</option>
+      </select>
+
+      <button class="btn" type="submit">Cadastrar</button>
+  <p class="sucesso" style="color: green; display: none; margin-top: 10px;">Cadastro realizado com sucesso.</p>
+    </form>
+
+    <div class="devs">
+      <h3 style="margin-top:24px; color:#80D0FF;">Desenvolvedores</h3>
+      <ul style="list-style:none; padding:0; color:#000000;">
+          <li><strong>Amanda Jaguella</strong></li>
+        <li><strong>Gustavo Chimello</strong></li>
+        <li><strong>Lucas Miyaki</strong></li>
+        <li><strong>Olavo Xavier</strong></li>
+        <li><strong>William Furquim</strong></li>
+
+      </ul>
+    </div>
+
+  </div>
+
+  <script>
+    // ===== FIREBASE =====
+    const firebaseConfig = {
+      apiKey: "AIzaSyBlpWF7Gsyf4ax2PaXVR79zKncc419ktv4",
+      authDomain: "proximity-ddb49.firebaseapp.com",
+      databaseURL: "https://proximity-ddb49-default-rtdb.firebaseio.com",
+      projectId: "proximity-ddb49",
+      storageBucket: "proximity-ddb49.appspot.com",
+      messagingSenderId: "112062802038",
+      appId: "1:112062802038:web:2f2eca97ef48e21c741757"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+
+    // ===== ELEMENTOS =====
+    const loginBtn = document.querySelector('.login');
+    const cadastroBtn = document.querySelector('.cadastro');
+    const loginForm = document.querySelector('.login-form');
+    const cadastroForm = document.querySelector('.cadastro-form');
+
+    // ===== INPUTS DE LOGIN =====
+    loginBtn.addEventListener('click', () => {
+      loginForm.style.display = 'block';
+      cadastroForm.style.display = 'none';
+    });
+
+    // ===== INPUTS DE CADASTRO =====
+    cadastroBtn.addEventListener('click', () => {
+      cadastroForm.style.display = 'block';
+      loginForm.style.display = 'none';
+    });
+
+    // ===== CRIAÇÃO DE CONTA (CADASTRO) =====
+    cadastroForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+
+      const inputs = cadastroForm.querySelectorAll('input');
+      const username = inputs[0].value.trim();
+      const password = inputs[1].value.trim();
+      const confirmPassword = inputs[2].value.trim();
+      const bairro = document.getElementById('bairro').value;
+
+      if (password.length < 8) {
+        inputs[1].classList.add('shake');
+        setTimeout(() => inputs[1].classList.remove('shake'), 300);
+        return;
+      }
+
+      if (password !== confirmPassword) {
+        [inputs[1], inputs[2]].forEach(input => {
+          input.classList.add('shake');
+          setTimeout(() => input.classList.remove('shake'), 300);
+        });
+        return;
+      }
+
+      const emailFake = username + "@proximity.app";
+
+      auth.createUserWithEmailAndPassword(emailFake, password)
+        .then(() => {
+          cadastroForm.classList.add('fade-out');
+          setTimeout(() => {
+            cadastroForm.style.display = 'none';
+            cadastroForm.classList.remove('fade-out');
+            cadastroForm.reset();
+
+            loginForm.style.display = 'block';
+            loginForm.classList.add('fade-in');
+            setTimeout(() => loginForm.classList.remove('fade-in'), 500);
+          }, 500);
+        })
+        .catch((error) => {
+          alert("Erro ao cadastrar: " + error.message);
+        });
+    });
+
+    // ===== LOGIN =====
+    loginForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+
+      const inputs = loginForm.querySelectorAll('input');
+      const usernameInput = inputs[0];
+      const passwordInput = inputs[1];
+
+      const emailFake = usernameInput.value.trim() + "@proximity.app";
+      const password = passwordInput.value.trim();
+
+      auth.signInWithEmailAndPassword(emailFake, password)
+        .then((userCredential) => {
+          const user = userCredential.user;
+          // Login bem-sucedido, redirecionar para index4.html
+          document.body.classList.add('page-fade-out');
+          setTimeout(() => {
+            window.location.href = "menu.html";
+          }, 500);
+
+
+          document.body.classList.add('page-fade-out');
+          setTimeout(() => {
+            window.location.href = "menu.html";
+          }, 500);
+        })
+        .catch((error) => {
+          [usernameInput, passwordInput].forEach(input => {
+            input.classList.add('shake');
+            setTimeout(() => input.classList.remove('shake'), 300);
+          });
+          alert(error.message);
+        });
+    });
+  </script>
+
+  <script src="./JS/register-sw.js"></script>
+
+</body>
+
+</html>

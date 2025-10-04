@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dicas do Morador</title>
+  <link rel="stylesheet" href="./CSS/dicas-morador.css" />
+</head>
+
+<body>
+  <div class="container">
+    <h1>Dicas para uma Cidade Sustentável 👇</h1>
+    <p style="color:#80D0FF; margin-bottom:10px;">Compartilhe ideias para melhorar a convivência, sustentabilidade e bem-estar no seu bairro.<br>
+  <strong>Exemplo:</strong> "Plante árvores na sua rua para melhorar o microclima."<br>
+    <span style="color:#4caf50;">Em breve: sugestões baseadas em dados ambientais da NASA.</span></p>
+
+    <div id="chat-box" aria-live="polite">
+    </div>
+
+    <input type="text" id="comentario" placeholder="Escreva sua sugestão para a vizinhança..." aria-label="Campo para sugestão" />
+    <button id="enviar-msg">Enviar Sugestão</button>
+    <button id="retornar-botao-not" onclick="window.location.href='menu.html'">Voltar ao menu</button>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js";
+    import { getDatabase, ref, push, onValue, remove, update } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyBlpWF7Gsyf4ax2PaXVR79zKncc419ktv4",
+      authDomain: "proximity-ddb49.firebaseapp.com",
+      databaseURL: "https://proximity-ddb49-default-rtdb.firebaseio.com",
+      projectId: "proximity-ddb49",
+      storageBucket: "proximity-ddb49.appspot.com",
+      messagingSenderId: "112062802038",
+      appId: "1:112062802038:web:2f2eca97ef48e21c741757"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getDatabase(app);
+
+    const comentarioInput = document.getElementById("comentario");
+    const enviarBtn = document.getElementById("enviar-msg");
+
+    // ===== ENVIAR COMENTÁRIO APERTANDO EM "ENTER" =====
+    comentarioInput.addEventListener("keydown", (event) => {
+      if (event.key === "Enter") {
+        event.preventDefault(); 
+        enviarBtn.click();
+      }
+    });
+    const chatBox = document.getElementById("chat-box");
+
+    let userEmail = "Anônimo";
+    let userUID = null;
+
+    // ===== PERFIL =====
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        userEmail = user.email;
+        userUID = user.uid;
+      }
+    });
+
+    function capitalizarPrimeiraLetra(texto) {
+      if (!texto) return "";
+      return texto.charAt(0).toUpperCase() + texto.slice(1);
+    }
+
+    // ===== ENVIAR AO MURAL =====
+    enviarBtn.addEventListener("click", () => {
+      let texto = comentarioInput.value.trim();
+      texto = capitalizarPrimeiraLetra(texto);
+      if (texto && userUID) {
+        const comentariosRef = ref(db, "guiaComentarios");
+        push(comentariosRef, {
+          texto,
+          autor: userEmail,
+          uid: userUID,
+          data: new Date().toLocaleString()
+        });
+        comentarioInput.value = "";
+      } else if (!userUID) {
+        alert("Você precisa estar logado para enviar sugestões.");
+      }
+    });
+
+    const comentariosRef = ref(db, "guiaComentarios");
+    onValue(comentariosRef, (snapshot) => {
+      const comentarios = [];
+
+      snapshot.forEach((childSnapshot) => {
+        comentarios.push({
+          key: childSnapshot.key,
+          ...childSnapshot.val()
+        });
+      });
+
+      comentarios.reverse();
+
+      chatBox.innerHTML = "";
+
+      comentarios.forEach(({ key, texto, autor, data, uid }) => {
+        const item = document.createElement("div");
+        item.className = "item";
+
+        let controles = "";
+        if (uid === userUID) {
+          controles = `
+        <button class="editar-btn" data-key="${key}">✏️</button>
+        <button class="excluir-btn" data-key="${key}">🗑️</button>
+      `;
+        }
+
+        item.innerHTML = `
+      <div class="conteudo">
+        <span class="spanverde">${autor}</span><br>
+        <small style="color:gray">${data}</small><br>
+        <span class="texto-comentario">${texto}</span>
+      </div>
+      <div class="controles">${controles}</div>
+    `;
+
+        chatBox.appendChild(item);
+      });
+
+      chatBox.scrollTop = 0;
+
+      document.querySelectorAll(".excluir-btn").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const key = btn.dataset.key;
+          if (confirm("Quer mesmo excluir esta sugestão?")) {
+            remove(ref(db, `guiaComentarios/${key}`));
+          }
+        });
+      });
+
+      document.querySelectorAll(".editar-btn").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const key = btn.dataset.key;
+          const itemDiv = btn.closest(".item");
+          const textoSpan = itemDiv.querySelector(".texto-comentario");
+
+          const currentText = textoSpan.textContent;
+          textoSpan.innerHTML = `<input type="text" class="edit-input" value="${currentText}" style="width: 100%;">`;
+
+          btn.style.display = "none";
+          const excluirBtn = itemDiv.querySelector(".excluir-btn");
+          if (excluirBtn) excluirBtn.style.display = "none";
+
+          const salvarBtn = document.createElement("button");
+          salvarBtn.textContent = "💾";
+          const cancelarBtn = document.createElement("button");
+          cancelarBtn.textContent = "❌";
+
+          const controlesDiv = itemDiv.querySelector(".controles");
+          controlesDiv.appendChild(salvarBtn);
+          controlesDiv.appendChild(cancelarBtn);
+
+          // Aqui adicionamos o listener para o Enter no input de edição:
+          const inputEdit = itemDiv.querySelector(".edit-input");
+          inputEdit.addEventListener("keydown", (event) => {
+            if (event.key === "Enter") {
+              event.preventDefault();
+              salvarBtn.click();
+            }
+          });
+
+          salvarBtn.addEventListener("click", () => {
+            let novoTexto = inputEdit.value.trim();
+            novoTexto = capitalizarPrimeiraLetra(novoTexto);
+            if (novoTexto) {
+              update(ref(db, `guiaComentarios/${key}`), { texto: novoTexto });
+            }
+          });
+
+          cancelarBtn.addEventListener("click", () => {
+            textoSpan.textContent = currentText;
+            salvarBtn.remove();
+            cancelarBtn.remove();
+            btn.style.display = "inline-block";
+            if (excluirBtn) excluirBtn.style.display = "inline-block";
+          });
+        });
+      });
+    });
+
+  </script>
+</body>
+
+</html>

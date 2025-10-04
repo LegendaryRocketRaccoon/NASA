@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#9C27B0">
+  <title>Solicitar Item</title>
+  <link rel="stylesheet" href="./CSS/btn-compart.css">
+</head>
+
+<body>
+  <div class="container">
+
+    <h1>Solicitar um novo item</h1>
+
+    <a href="./compartilhamento.html" style="width: 100%;">
+      <button id="ofe">Voltar</button>
+    </a>
+
+    <input type="text" id="nome-item" placeholder="Nome do item" />
+    <input type="file" id="imagem-input" accept="image/*" />
+    <img id="preview"
+      style="display:none; max-width: 100%; max-height: 150px; border-radius: 10px; margin-top: 10px;" />
+
+    <select id="status-item">
+      <option value="Disponível">Empréstimo</option>
+      <option value="Emprestado">Compra</option>
+    </select>
+
+    <select id="categoria-item">
+      <option value="">Selecione a categoria</option>
+      <option value="ferramentas">🔧 Ferramentas</option>
+      <option value="livros">📚 Livros</option>
+      <option value="cozinha">🍳 Cozinha</option>
+      <option value="lazer">🎮 Lazer</option>
+      <option value="esportes">⚽ Esportes</option>
+      <option value="material">🎨 Material</option>
+      <option value="saude">💚 Saúde</option>
+    </select>
+
+    <input type="text" id="distancia-item" placeholder="Digite o seu endereço com rua e número da casa!" />
+
+    <button id="adicionar">Adicionar</button>
+
+    <h3>Aqui estão seus itens solicitados</h3>
+
+    <div class="scroll-container">
+      <div id="itens-adicionados" class="itens-lista"></div>
+    </div>
+
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+  <script src="./JS/firebase-config.js"></script>
+
+  <script>
+    // ===== CAPTURA DE ELEMENTOS =====
+    const nomeInput = document.getElementById("nome-item");
+    const imagemInput = document.getElementById("imagem-input");
+    const statusInput = document.getElementById("status-item");
+    const categoriaInput = document.getElementById("categoria-item");
+    const distanciaInput = document.getElementById("distancia-item");
+    const btnAdicionar = document.getElementById("adicionar");
+    const listaItens = document.getElementById("itens-adicionados");
+    const previewImg = document.getElementById("preview");
+
+    let itemEmEdicaoKey = null;
+
+    function carregarItensExtras() {
+      firebase.auth().onAuthStateChanged((user) => {
+        if (!user) return;
+        const uid = user.uid;
+
+        const itemsRef = database.ref("itensSolicitados");
+
+        itemsRef.on("value", (snapshot) => {
+          listaItens.innerHTML = "";
+          const items = snapshot.val();
+
+          if (items) {
+            Object.keys(items).forEach((key) => {
+              const item = items[key];
+              if (item.uid === uid) {
+                const div = document.createElement("div");
+                div.className = "item";
+                div.style.opacity = "1";
+                div.style.transform = "translateY(0)";
+
+                div.innerHTML = `
+              <img src="${item.imagem}" alt="${item.nome}" />
+              <div>
+                <strong>${item.nome}</strong><br/>
+                <span>Seu endereço: ${item.distancia}</span><br/>
+                <div class="status ${item.status === 'Disponível' ? 'disponivel' : 'emprestado'}">
+                  ${item.status === 'Disponível' ? 'Empréstimo' : 'Compra'}
+                </div>
+                <button onclick="editarItem('${key}')">Editar</button>
+                <button onclick="removerItem('${key}')">Excluir</button>
+              </div>
+            `;
+                listaItens.appendChild(div);
+              }
+            });
+          }
+        });
+      });
+    }
+
+    function removerItem(key) {
+      database.ref("itensSolicitados").child(key).remove()
+        .then(() => carregarItensExtras())
+        .catch((err) => console.error("Erro ao excluir:", err));
+    }
+
+    function editarItem(key) {
+      const itemRef = database.ref("itensSolicitados").child(key);
+
+      itemRef.once("value").then(snapshot => {
+        const item = snapshot.val();
+        if (item) {
+          nomeInput.value = item.nome;
+          statusInput.value = item.status;
+          distanciaInput.value = item.distancia;
+          categoriaInput.value = item.categoria || "";
+          previewImg.src = item.imagem;
+          previewImg.style.display = "block";
+          itemEmEdicaoKey = key;
+
+          btnAdicionar.textContent = "Salvar edição";
+        }
+      });
+    }
+
+    function adicionarItem() {
+      const nome = nomeInput.value.trim();
+      const status = statusInput.value;
+      const distancia = distanciaInput.value.trim();
+      const categoria = categoriaInput.value;
+      const imagemArquivo = imagemInput.files[0];
+
+      const user = firebase.auth().currentUser;
+      if (!user) {
+        alert("Usuário não autenticado!");
+        return;
+      }
+      const uid = user.uid;
+
+      if (!nome || (!itemEmEdicaoKey && !imagemArquivo) || !distancia || !categoria) {
+        alert("Preencha todos os campos e selecione uma imagem.");
+        return;
+      }
+
+      const atualizarOuCriarItem = (imagemFinal) => {
+        const novoItem = { nome, imagem: imagemFinal, status, distancia, categoria, uid, data: new Date().toISOString() };
+
+        if (itemEmEdicaoKey) {
+          database.ref("itensSolicitados").child(itemEmEdicaoKey).set(novoItem)
+            .then(() => {
+              resetarFormulario();
+              carregarItensExtras();
+            });
+        } else {
+          database.ref("itensSolicitados").push(novoItem)
+            .then(() => {
+              resetarFormulario();
+              carregarItensExtras();
+            });
+        }
+      };
+
+      if (imagemArquivo) {
+        const leitor = new FileReader();
+        leitor.onload = function (event) {
+          atualizarOuCriarItem(event.target.result);
+        };
+        leitor.readAsDataURL(imagemArquivo);
+      } else {
+        database.ref("itensSolicitados").child(itemEmEdicaoKey).once("value").then(snapshot => {
+          const itemAtual = snapshot.val();
+          atualizarOuCriarItem(itemAtual.imagem);
+        });
+      }
+    }
+
+    function resetarFormulario() {
+      nomeInput.value = "";
+      imagemInput.value = "";
+      distanciaInput.value = "";
+      categoriaInput.value = "";
+      previewImg.style.display = "none";
+      btnAdicionar.textContent = "Adicionar";
+      itemEmEdicaoKey = null;
+    }
+
+    // ===== EXIBIR IMAGEM DO INPUT FILE =====
+    imagemInput.addEventListener("change", () => {
+      const file = imagemInput.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function (e) {
+          previewImg.src = e.target.result;
+          previewImg.style.display = "block";
+        };
+        reader.readAsDataURL(file);
+      } else {
+        previewImg.style.display = "none";
+      }
+    });
+
+    btnAdicionar.onclick = adicionarItem;
+
+    // ===== CHECAR USUÁRIO LOGADO =====
+    firebase.auth().onAuthStateChanged((user) => {
+      if (user) {
+        carregarItensExtras();
+      } else {
+        alert("Você precisa estar logado para ver seus itens.");
+        window.location.href = "index.html";
+      }
+    });
+  </script>
+
+  <script src="./JS/register-sw.js"></script>
+
+</body>
+
+</html>
