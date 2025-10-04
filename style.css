@@ -1,0 +1,283 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap');
+
+* {
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
+  font-family: "Outfit", sans-serif;
+}
+
+body {
+  background: linear-gradient(to right, #3a0397, #6936aa);
+  height: 100vh;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+.centro {
+  height: 100vh;
+  width: 100%;
+  max-width: 500px;
+  background-color: rgb(255, 255, 255);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  overflow-y: auto;
+  /* <- adiciona scroll só interno se precisar */
+  padding: 20px;
+}
+
+.centro img {
+  width: auto;
+  height: 175px;
+}
+
+.botoes {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 20px;
+  /* Espaço entre o título e os botões */
+}
+
+
+.login {
+  padding: 10px;
+  width: 350px;
+  border-radius: 10px;
+  border: none;
+  color: white;
+  background-color: rgb(48, 48, 48);
+  cursor: pointer;
+  font-size: 1.2em;
+}
+
+.cadastro {
+  padding: 10px;
+  width: 350px;
+  border-radius: 10px;
+  border: none;
+  color: rgb(255, 255, 255);
+  background-color: rgb(45, 3, 77);
+  cursor: pointer;
+  font-size: 1.2em;
+}
+
+.devamanda {
+  height: 29px;
+  width: 180px;
+  margin-left: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+.devamanda img {
+  height: 30px;
+  width: auto;
+}
+
+.devwilliam {
+  height: 29px;
+  width: 180px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+}
+
+.devwilliam img {
+  height: 30px;
+  width: auto;
+}
+
+button {
+  margin: 5px;
+}
+
+.input-login {
+  position: relative;
+  height: 40px;
+  display: flex;
+  background-color: #d0cece;
+  border-radius: 8px;
+  color: rgb(0, 0, 0);
+  border: 2px #000000;
+  margin-top: 7px;
+  padding-left: 10px;
+}
+
+.input-cad {
+  position: relative;
+  display: flex;
+  height: 40px;
+  background-color: #d0cece;
+  border-radius: 8px;
+  color: rgb(0, 0, 0);
+  border: 2px #000000;
+  margin-top: 7px;
+  padding-left: 10px;
+}
+
+::placeholder {
+  color: rgb(117, 117, 117);
+}
+
+.btn {
+  height: 40px;
+  width: 95%;
+  background-color: rgb(45, 3, 77);
+  border: none;
+  border-radius: 8px;
+  color: rgb(255, 255, 255);
+  font-size: 1em;
+  margin-top: 10px;
+  cursor: pointer;
+  align-items: center;
+}
+
+@keyframes shake {
+  0% {
+    transform: translateX(0);
+  }
+
+  20% {
+    transform: translateX(-5px);
+  }
+
+  40% {
+    transform: translateX(5px);
+  }
+
+  60% {
+    transform: translateX(-5px);
+  }
+
+  80% {
+    transform: translateX(5px);
+  }
+
+  100% {
+    transform: translateX(0);
+  }
+}
+
+.shake {
+  animation: shake 0.5s ease;
+  border: 2px solid red;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  to {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+}
+
+.fade-in {
+  animation: fadeIn 0.5s ease forwards;
+}
+
+.fade-out {
+  animation: fadeOut 0.5s ease forwards;
+}
+
+.input-cad,
+.input-login,
+select.input-cad {
+  width: 100%;
+
+}
+
+.page-fade-out {
+  opacity: 0;
+  transform: translateY(-20px);
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+
+@media (max-width: 360px) {
+  .login {
+    width: 280px;
+    padding: 10px;
+  }
+
+  .cadastro {
+    width: 280px;
+    padding: 10px;
+  }
+
+  .se-conecte {
+    font-size: 19px;
+    color: rgb(0, 0, 0);
+  }
+
+  #logo {
+    width: auto;
+    height: 145px;
+  }
+}
+
+@media (max-width: 290px) {
+  .login {
+    width: 240px;
+    padding: 8px;
+  }
+
+  .cadastro {
+    width: 240px;
+    padding: 8px;
+  }
+
+  .se-conecte {
+    font-size: 17px;
+    color: #000000;
+  }
+
+  #logo {
+    width: auto;
+    height: 130px;
+  }
+}
+
+@media (max-width: 280px) {
+  .login {
+    width: 200px;
+    padding: 8px;
+  }
+
+  .cadastro {
+    width: 200px;
+    padding: 8px;
+  }
+
+  .se-conecte {
+    font-size: 16px;
+    color: #000000;
+  }
+
+  #logo {
+    width: auto;
+    height: 110px;
+  }
+}

@@ -1,0 +1,136 @@
+body {
+  margin: 0;
+  font-family: 'Segoe UI', sans-serif;
+  background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+  color: #e0e0e0;
+  min-height: 100vh;
+}
+header {
+  background: rgba(20, 40, 60, 0.8);
+  padding: 1rem;
+  text-align: center;
+  font-size: 2rem;
+  font-weight: bold;
+  color: #00ffe5;
+  text-shadow: 0 0 10px #00ffe5;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(6px);
+}
+.deimos-main {
+  max-width: 600px;
+  margin: 2rem auto;
+  background: rgba(30, 50, 70, 0.7);
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.25);
+  padding: 2rem 1.5rem 1rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+.intro {
+  background: rgba(255,255,255,0.07);
+  border-radius: 10px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  color: #b2ebf2;
+  font-size: 1.1rem;
+}
+.intro ul {
+  margin: 0.5rem 0 0 1.2rem;
+  color: #fff;
+}
+#chat-container {
+  min-height: 180px;
+  max-height: 320px;
+  overflow-y: auto;
+  background: rgba(255,255,255,0.05);
+  border-radius: 10px;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  scroll-behavior: smooth;
+}
+.message {
+  max-width: 75%;
+  padding: 0.8rem 1rem;
+  border-radius: 16px;
+  font-size: 1rem;
+  line-height: 1.5;
+  word-wrap: break-word;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  animation: fadeIn 0.4s ease-in-out;
+}
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.user {
+  background: linear-gradient(135deg, #1e88e5, #42a5f5);
+  align-self: flex-end;
+  color: #fff;
+}
+.bot {
+  background: linear-gradient(135deg, #37474f, #607d8b);
+  align-self: flex-start;
+  color: #e0f2f1;
+}
+.typing {
+  font-style: italic;
+  opacity: 0.6;
+}
+#input-area {
+  display: flex;
+  gap: 0.5rem;
+  background: rgba(20, 30, 40, 0.8);
+  border-radius: 10px;
+  padding: 1rem;
+}
+#user-input {
+  flex: 1;
+  padding: 0.7rem 1rem;
+  border: none;
+  border-radius: 10px;
+  font-size: 1rem;
+  outline: none;
+  background-color: rgba(255, 255, 255, 0.1);
+  color: #e0f7fa;
+  backdrop-filter: blur(4px);
+  transition: background-color 0.3s ease;
+}
+#user-input::placeholder {
+  color: #b0bec5;
+}
+#user-input:focus {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+button {
+  background: linear-gradient(135deg, #00bcd4, #1de9b6);
+  border: none;
+  padding: 0.7rem 1.2rem;
+  border-radius: 10px;
+  font-size: 1rem;
+  cursor: pointer;
+  color: white;
+  font-weight: bold;
+  box-shadow: 0 0 10px #00e5ff;
+  transition: transform 0.2s ease, box-shadow 0.3s ease;
+}
+button:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 14px #00e5ff;
+}
+#status {
+  text-align: center;
+  font-size: 0.9rem;
+  padding: 0.6rem;
+  background-color: rgba(10, 20, 30, 0.7);
+  color: #90caf9;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 0 0 10px 10px;
+  margin-top: 0.5rem;
+}
+@media (max-width: 700px) {
+  .deimos-main { max-width: 98vw; padding: 1rem 0.5rem; }
+  header { font-size: 1.2rem; }
+}

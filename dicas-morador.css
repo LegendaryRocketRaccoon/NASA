@@ -1,0 +1,130 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap');
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Outfit', sans-serif;
+}
+
+body {
+  background: linear-gradient(to right, #3a0397, #6936aa);
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: stretch;
+}
+
+.container {
+  width: 100%;
+  max-width: 500px;
+  background: #fff;
+  padding: 25px;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  height: 100vh;
+}
+
+h1 {
+  font-size: 22px;
+  text-align: center;
+}
+
+#chat-box {
+  width: 100%;
+  flex: 1;
+  overflow-y: auto;
+  padding-right: 6px;
+  scrollbar-width: thin;
+  scrollbar-color: #333;
+}
+
+#chat-box::-webkit-scrollbar {
+  width: 6px;
+}
+
+#chat-box::-webkit-scrollbar-thumb {
+  background-color: #6936aa;
+  border-radius: 3px;
+}
+
+.item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 12px;
+  padding: 10px;
+  border-radius: 10px;
+  background: #444242;
+  color: white;
+  width: 100%;
+}
+
+.conteudo {
+  flex: 1;
+  min-width: 0;
+}
+
+.texto-comentario {
+  display: block;
+  width: 100%;
+  word-wrap: break-word;
+  white-space: pre-wrap;
+  margin-top: 15px;
+}
+
+.controles {
+  display: flex;
+  flex-direction: row;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.spanverde {
+  color: #64fc53;
+}
+
+input {
+  width: 100%;
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  transition: all 0.3s;
+}
+
+input:focus {
+  border-color: #3a0397;
+  outline: none;
+  box-shadow: 0 0 5px rgba(58, 3, 151, 0.4);
+}
+
+#enviar-msg,
+#retornar-botao-not {
+  width: 100%;
+  padding: 12px;
+  border-radius: 12px;
+  font-size: 16px;
+  color: white;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.3s, transform 0.3s;
+}
+
+#enviar-msg {
+  background-color: teal;
+}
+
+#enviar-msg:hover {
+  background-color: #004848;
+  transform: scale(1.02);
+}
+
+#retornar-botao-not {
+  background-color: black;
+}
+
+#retornar-botao-not:hover {
+  background-color: #000;
+  transform: scale(1.02);
+}
